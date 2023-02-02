@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.credit.home.entities.Account;
 import com.credit.home.entities.Offer;
 
 public interface OfferRepo extends JpaRepository<Offer, Long>
@@ -15,5 +14,4 @@ public interface OfferRepo extends JpaRepository<Offer, Long>
 			+ "and offerActivationTime<= CURRENT_TIMESTAMP and account.accountId = ?1")
 	List<Offer> findActiveOffers(Long accountId);
 	
-	List<Offer> findByAccount(Account account);
 }

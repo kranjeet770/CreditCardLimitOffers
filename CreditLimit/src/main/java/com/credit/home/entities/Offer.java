@@ -2,9 +2,6 @@ package com.credit.home.entities;
 
 import java.util.Date;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-
 import com.credit.home.enums.LimitType;
 import com.credit.home.enums.Status;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -18,25 +15,44 @@ public class Offer {
 	
 	@Id
 	private Long limitId;
+	
+	@Column(nullable=false)
 	private double newLimit;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date offerActivationTime;
 	
+	@Column(nullable=false)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date offerExpiryTime;
 	
+	@Column(nullable=false)
 	@Enumerated(EnumType.STRING)
 	private LimitType limitType;
 	
+	@Enumerated(EnumType.STRING)
+	private Status status=null;
+	
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "account_id", nullable = false)
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JsonIgnore
 	private Account account;
 
-	@Enumerated(EnumType.STRING)
-	private Status status;
+	public Offer() {
+
+	}
+
+	public Offer(Long limitId, double newLimit, Date offerActivationTime, Date offerExpiryTime, LimitType limitType,
+			Status status, Account account) 
+	{
+		this.limitId = limitId;
+		this.newLimit = newLimit;
+		this.offerActivationTime = offerActivationTime;
+		this.offerExpiryTime = offerExpiryTime;
+		this.limitType = limitType;
+		this.status = status;
+		this.account = account;
+	}
 
 	public LimitType getLimitType() {
 		return limitType;
@@ -96,8 +112,9 @@ public class Offer {
 
 	@Override
 	public String toString() {
-		return "Limit [limitId=" + limitId + ", newLimit=" + newLimit + ", offerActivationTime=" + offerActivationTime
-				+ ", offerExpiryTime=" + offerExpiryTime + "]";
+		return "Offer [limitId=" + limitId + ", newLimit=" + newLimit + ", offerActivationTime=" + offerActivationTime
+				+ ", offerExpiryTime=" + offerExpiryTime + ", limitType=" + limitType + ", status=" + status
+				+ ", account=" + account + "]";
 	}
 
 	

@@ -11,13 +11,16 @@ public class Account {
 	
 	@Id
 	private Long accountId;
+	
 	private long customerId;
 	private double accountLimit;
 	private double perTransactionLimit;
 	private double lastAccountLimit;
 	private double lastPerTransactionLimit;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date accountLimitUpdateTime;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date perTransactionLimitUpdateTime;
 	
@@ -28,8 +31,8 @@ public class Account {
 	
 	public Account(Long accountId, long customerId, double accountLimit, double perTransactionLimit,
 			double lastAccountLimit, double lastPerTransactionLimit, Date accountLimitUpdateTime,
-			Date perTransactionLimitUpdateTime) {
-		
+			Date perTransactionLimitUpdateTime) 
+	{
 		this.accountId = accountId;
 		this.customerId = customerId;
 		this.accountLimit = accountLimit;
@@ -38,6 +41,10 @@ public class Account {
 		this.lastPerTransactionLimit = lastPerTransactionLimit;
 		this.accountLimitUpdateTime = accountLimitUpdateTime;
 		this.perTransactionLimitUpdateTime = perTransactionLimitUpdateTime;
+	}
+
+	public Long getAccountId() {
+		return accountId;
 	}
 
 	public void setAccountId(Long accountId) {

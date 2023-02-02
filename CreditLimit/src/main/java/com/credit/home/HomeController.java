@@ -2,7 +2,6 @@ package com.credit.home;
 
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,15 +36,15 @@ public class HomeController {
 	}
 	
 	@GetMapping("/getAccount/{accountId}")
-	public Optional<Account> getAccount(@PathVariable Long accountId)
+	public Account getAccount(@PathVariable Long accountId)
 	{
 		return accountService.getAccount(accountId);
 	}
 	
 	@PostMapping("/createLimitOffer/{accountId}")
-	public Offer createComment( @PathVariable(value = "accountId") Long accountId, @RequestBody Offer offerRequest) 
+	public Offer createLimitOffer( @PathVariable(value = "accountId") Long accountId, @RequestBody Offer offerRequest) 
 	{
-	    return offerService.createComment(accountId,offerRequest);
+	    return offerService.createLimitOffer(accountId,offerRequest);
 	}
 	
 	@GetMapping("/getLimitOffer/{accountId}")

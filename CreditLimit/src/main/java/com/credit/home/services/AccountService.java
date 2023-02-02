@@ -1,8 +1,8 @@
 package com.credit.home.services;
 
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -18,17 +18,27 @@ public class AccountService {
 		this.accountRepo = accountRepo;
 	}
 
-	public Account addAccount(@RequestBody Account account)
+	public Account addAccount( @Validated @RequestBody Account account )
 	{
-		System.out.println(account);
-		accountRepo.save(account);
-		return account;
+		if( accountRepo.existsById( account.getAccountId() ))
+		{
+			System.out.println( "Account Id already exists" );
+			return null;			
+		}
+		
+		return accountRepo.save( account );
 	}
 	
-	public Optional<Account> getAccount(@PathVariable Long accountId)
+	public Account getAccount(@PathVariable Long accountId)
 	{
-		System.out.println(accountId);
-		Optional<Account> account = accountRepo.findById(accountId);
+		Account account = accountRepo.findById( accountId ).orElse(null);
+		
+		if( account == null )
+		{
+			System.out.println( "Account not found" );
+			return null;
+		}
+		
 		return account;
 	}
 }
