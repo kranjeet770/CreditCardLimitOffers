@@ -3,6 +3,7 @@ package com.credit.home;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,31 +31,32 @@ public class HomeController {
 
 
 	@PostMapping("/addAccount")
-	public Account addAccount(@RequestBody Account account)
+	public ResponseEntity<Account> addAccount(@RequestBody Account account)
 	{
 		return accountService.addAccount(account);
 	}
 	
 	@GetMapping("/getAccount/{accountId}")
-	public Account getAccount(@PathVariable Long accountId)
+	public ResponseEntity<Account> getAccount(@PathVariable Long accountId)
 	{
 		return accountService.getAccount(accountId);
 	}
 	
 	@PostMapping("/createLimitOffer/{accountId}")
-	public Offer createLimitOffer( @PathVariable(value = "accountId") Long accountId, @RequestBody Offer offerRequest) 
+	public ResponseEntity<Offer> createLimitOffer( @PathVariable(value = "accountId") Long accountId, 
+													@RequestBody Offer offerRequest) 
 	{
 	    return offerService.createLimitOffer(accountId,offerRequest);
 	}
 	
 	@GetMapping("/getLimitOffer/{accountId}")
-	public List<Offer> getLimitOffer( @PathVariable(value = "accountId") Long accountId) 
+	public ResponseEntity<List<Offer>> getLimitOffer( @PathVariable(value = "accountId") Long accountId) 
 	{
 	    return offerService.getLimitOffer(accountId);
 	}
 	
 	@PostMapping("/actLimitOffer/{limitId}/{status}")
-	public Offer actLimitOffer( @PathVariable(value = "limitId") Long limitId,
+	public ResponseEntity<Offer> actLimitOffer( @PathVariable(value = "limitId") Long limitId,
 								@PathVariable(value = "status") Status status) 
 	{
 		return offerService.actLimitOffer(limitId,status);

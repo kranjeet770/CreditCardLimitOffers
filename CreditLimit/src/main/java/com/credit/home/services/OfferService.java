@@ -3,8 +3,9 @@ package com.credit.home.services;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 
 import com.credit.home.dao.AccountRepo;
 import com.credit.home.dao.OfferRepo;
@@ -12,6 +13,9 @@ import com.credit.home.entities.Account;
 import com.credit.home.entities.Offer;
 import com.credit.home.enums.LimitType;
 import com.credit.home.enums.Status;
+import com.credit.home.exceptions.ForbiddenException;
+import com.credit.home.exceptions.ResourceAlreadyExistsException;
+import com.credit.home.exceptions.ResourceNotFoundException;
 
 @Service
 public class OfferService {
@@ -25,27 +29,20 @@ public class OfferService {
 		this.offerRepo = offerRepo;
 	}
 	
-	public Offer createLimitOffer( Long accountId,@Validated Offer offerRequest) 
+	public ResponseEntity<Offer> createLimitOffer( Long accountId, Offer offerRequest) 
 	{
-		Account account = accountRepo.findById( accountId ).orElse( null );
-		
-		if(account == null )
-		{
-			System.out.println( "Account not found" );
-			return null;
-		}
+		Account account = accountRepo.findById( accountId ).
+				orElseThrow( () -> new ResourceNotFoundException( "Account Id: " + accountId + " Not found" ) );
 		
 		if( offerRepo.existsById( offerRequest.getLimitId() ))
 		{
-			System.out.println( "Limit Offer Id already exists" );
-			return null;			
+			throw new ResourceAlreadyExistsException( "Limit Id: " + offerRequest.getLimitId() + " already exists" );				
 		}
 		
 		if( offerRequest.getOfferActivationTime().compareTo( offerRequest.getOfferExpiryTime() ) > 0
 				|| new Date().compareTo( offerRequest.getOfferExpiryTime() ) > 0 )
 		{
-			System.out.println("Expiry Date not valid");
-			return null;
+			throw new ForbiddenException( "Expiry Date not valid" );
 		}
 		
 		if( offerRequest.getLimitType() == LimitType.ACCOUNT_LIMIT )
@@ -53,66 +50,62 @@ public class OfferService {
 			if( offerRequest.getNewLimit() > account.getAccountLimit() )
 			{
 				offerRequest.setAccount( account );
-			    return offerRepo.save( offerRequest );				
+			    offerRepo.save( offerRequest );				
 			}
-			
 			else
 			{
-				System.out.print("New Account Limit is less than current Account Limit");
+				throw new ForbiddenException( "New Account Limit is less than current Account Limit" );
 			}
 		}
 		
-		else if(offerRequest.getLimitType()==LimitType.PER_TRANSACTION_LIMIT)
+		else if( offerRequest.getLimitType() == LimitType.PER_TRANSACTION_LIMIT )
 		{
 			if( offerRequest.getNewLimit() > account.getPerTransactionLimit() )
 			{
 				offerRequest.setAccount( account );
-			    return offerRepo.save( offerRequest );				
+			    offerRepo.save( offerRequest );				
 			}
 			else
 			{
-				System.out.print("New Per-Transaction Limit is less than current Per-Transaction Limit");
+				throw new ForbiddenException( "New Per-Transaction Limit is less than current Per-Transaction Limit" );
 			}
 		}
 		
-		return null;
+		return new ResponseEntity<>( offerRequest , HttpStatus.OK );
 	}
 	
-	public List<Offer> getLimitOffer( Long accountId) 
-	{
-		Account account = accountRepo.findById( accountId ).orElse( null );
-		
-		if( account == null )
+	public ResponseEntity<List<Offer>> getLimitOffer( Long accountId ) 
+	{	
+		if( ! accountRepo.existsById( accountId ) )
 		{
-			System.out.println( "Account not found" );
-			return null;
+			throw new ResourceNotFoundException( "Account Id: " + accountId + " Not found" );
 		}
 		
-	    return offerRepo.findActiveOffers( accountId );
+		List<Offer> offers = offerRepo.findActiveOffers( accountId );
+		
+		if( offers.size() == 0 )
+		{
+			return new ResponseEntity<>( offers , HttpStatus.NO_CONTENT );
+		}
+		
+	    return new ResponseEntity<>( offers , HttpStatus.OK );
 	}
 	
-	public Offer actLimitOffer(  Long limitId, Status status) 
+	public ResponseEntity<Offer> actLimitOffer( Long limitId, Status status ) 
 	{
-		Offer offer = offerRepo.findById(limitId).orElse(null);
-		
-		if( offer == null )
-		{
-			System.out.println("Offer not found");
-			return null;
-		}
+		Offer offer = offerRepo.findById( limitId ).
+				orElseThrow( () -> new ResourceNotFoundException( "Limit Id: " + limitId + " Not found" ) );;
 		
 		if( new Date().compareTo( offer.getOfferActivationTime() ) < 0 
 				|| new Date().compareTo(offer.getOfferExpiryTime()) > 0 
 				|| offer.getStatus() != null )
 		{
-			System.out.println("Offer no longer valid");
-			return null;			
+			throw new ForbiddenException( "Offer no longer valid" );		
 		}
 		
-		offer.setStatus(status);
-		
-		if(status==Status.ACCEPTED)
+		if( status == Status.ACCEPTED )
 		{
+			offer.setStatus(status);
 			Account account = offer.getAccount();
 			if(offer.getLimitType()==LimitType.ACCOUNT_LIMIT)
 			{
@@ -121,14 +114,15 @@ public class OfferService {
 				account.setAccountLimitUpdateTime(new Date());
 			}
 			
-			else if(offer.getLimitType()==LimitType.PER_TRANSACTION_LIMIT)
+			else if( offer.getLimitType()==LimitType.PER_TRANSACTION_LIMIT )
 			{
-				account.setLastPerTransactionLimit(account.getPerTransactionLimit());
-				account.setPerTransactionLimit(offer.getNewLimit());
-				account.setPerTransactionLimitUpdateTime(new Date());
+				account.setLastPerTransactionLimit( account.getPerTransactionLimit() );
+				account.setPerTransactionLimit( offer.getNewLimit() );
+				account.setPerTransactionLimitUpdateTime( new Date() );
 			}
+			offerRepo.save(offer);
 		}
 		
-	    return offerRepo.save(offer);
+		return new ResponseEntity<>( offer, HttpStatus.OK );
 	}
 }
