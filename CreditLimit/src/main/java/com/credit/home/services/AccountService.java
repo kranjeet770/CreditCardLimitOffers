@@ -29,7 +29,7 @@ public class AccountService {
 		}
 		
 		accountRepo.save( account );
-		return new ResponseEntity<>(account, HttpStatus.OK);
+		return new ResponseEntity<>(account, HttpStatus.CREATED);
 	}
 	
 	public ResponseEntity<Account> getAccount(@PathVariable Long accountId)

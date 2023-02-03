@@ -71,7 +71,7 @@ public class OfferService {
 			}
 		}
 		
-		return new ResponseEntity<>( offerRequest , HttpStatus.OK );
+		return new ResponseEntity<>( offerRequest , HttpStatus.CREATED );
 	}
 	
 	public ResponseEntity<List<Offer>> getLimitOffer( Long accountId ) 
